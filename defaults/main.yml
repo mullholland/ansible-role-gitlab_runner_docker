@@ -1,0 +1,33 @@
+---
+# General config
+gitlab_runner_docker_network_name: "gitlab"
+gitlab_runner_docker_base_path: "/opt"
+gitlab_runner_docker_timezone: "Europe/Berlin"
+
+# User/Group of the stack. Everything is mapped to this, instead of root.
+gitlab_runner_docker_user: "homelab"
+gitlab_runner_docker_uid: "900"
+gitlab_runner_docker_group: "homelab"
+gitlab_runner_docker_gid: "900"
+gitlab_runner_docker_user_system: true
+
+# options
+# https://docs.gitlab.com/runner/commands/index.html#using-environment-variables
+# gitlab-runner install --help
+gitlab_runner_docker_registration_envs:
+  - "REGISTER_LOCKED: true"
+  - "RUNNER_EXECUTOR: docker"
+  - "DOCKER_IMAGE: docker"
+  - "DOCKER_VOLUMES: '/var/run/docker.sock:/var/run/docker.sock'"
+
+gitlab_runner_docker_instances:
+  - name: ""          # (required). Name of the GitLab runner instance
+    image: ""         # (optional). Which image to use. Defaults to "registry.gitlab.com/gitlab-org/gitlab-runner:alpine".
+    server: ""        # (required). GitLab serer URL
+    token: ""         # (required). GitLab registration token.
+    env: []           # (optional). Add additional environment variables only for gitlab runner.
+    register_env: []  # (optional). Add additional environment variables only for runner registration. see option with 'gitlab-runner install --help'
+    register_cmd: []  # (optional). Add additional commandline options for runner registration
+    volumes: []       # (optional). Add additional volume mappings.
+    ports: []         # (optional). Map docker port to the Host, can be used to exposed metrics or similar.
+    labels: []        # (optional). Add container labels.

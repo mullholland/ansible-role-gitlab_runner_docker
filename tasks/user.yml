@@ -1,0 +1,13 @@
+---
+- name: user | Ensure group exists
+  ansible.builtin.group:
+    name: "{{ gitlab_runner_docker_group }}"
+    gid: "{{ gitlab_runner_docker_gid }}"
+    state: present
+
+- name: user | Ensure user exists with gid
+  ansible.builtin.user:
+    name: "{{ gitlab_runner_docker_user }}"
+    uid: "{{ gitlab_runner_docker_uid }}"
+    system: "{{ gitlab_runner_docker_user_system | default(omit) }}"
+    state: "present"

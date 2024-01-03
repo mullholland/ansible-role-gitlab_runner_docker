@@ -1,0 +1,38 @@
+---
+galaxy_info:
+  author: mullholland
+  namespace: mullholland
+  role_name: gitlab_runner_docker
+  description: Install and configures GitLab Runner in a docker container
+  license: MIT
+  company: none
+  min_ansible_version: "2.10"
+
+  platforms:
+    - name: EL
+      versions:
+        - all
+    # - name: Amazon
+    #   versions:
+    #     - Candidate
+    - name: Fedora
+      versions:
+        - "38"
+        - "39"
+    - name: Ubuntu
+      versions:
+        - "all"
+    - name: Debian
+      versions:
+        - all
+
+  galaxy_tags:
+    - cloud
+    - development
+    - webserver
+    - gitlab
+    - gitlabrunner
+    - ci
+    - cicd
+
+dependencies: []

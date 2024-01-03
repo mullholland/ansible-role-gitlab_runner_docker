@@ -1,0 +1,75 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: true
+  vars:
+    runner_configs:
+      - name: "group"
+        image: "registry.gitlab.com/gitlab-org/gitlab-runner:alpine"
+        server: "https://gitlab.homelab.surprise-adoption.de"
+        token: "glrt-GnhtWxnfAxn3GnT4ExiK"
+        env:
+          - "KEY1: VALUE1"
+        register_env:
+          - "KEY2: VALUE2"
+        # command: ""
+        volumes:
+          - "/tmp:/tmp"
+        ports:
+          - "8080:8080"
+        labels:
+          - "Label1=Tag1"
+        state: present
+      - name: "group2"
+        image: "registry.gitlab.com/gitlab-org/gitlab-runner:alpine"
+        server: "https://gitlab.homelab.surprise-adoption.de"
+        token: "glrt-GnhtWxnfAxn3GnT4ExiK"
+        env:
+          - "KEY1: VALUE1"
+        register_env:
+          - "KEY2: VALUE2"
+        # command: ""
+        volumes:
+          - "/tmp:/tmp"
+        ports:
+          - "8080:8080"
+        labels:
+          - "Label1=Tag1"
+        state: present
+
+  tasks:
+    - name: SmokeTests
+      ansible.builtin.debug:
+        msg:
+          - "ansible_version => {{ansible_version}}"
+          - "ansible_distribution => {{ ansible_distribution }}"
+          - "ansible_distribution_major_version => {{ ansible_distribution_major_version }}"
+          - "ansible_os_family  => {{ ansible_os_family}}"
+          - "ansible_system  => {{ ansible_system }}"
+
+    - name: check runner compsoe file
+      lineinfile:
+        name: "/opt/gitlab_runner/{{ item.name }}/docker-compose.yml"
+        line: "    image: registry.gitlab.com/gitlab-org/gitlab-runner:alpine"
+        state: present
+        owner: "homelab"
+        group: "homelab"
+        mode: "0640"
+      check_mode: true
+      register: molecule_compose
+      failed_when: (molecule_compose is changed) or (molecule_compose is failed)
+      with_items: "{{ runner_configs }}"
+
+    - name: check service file conf file
+      ansible.builtin.lineinfile:
+        name: "/etc/systemd/system/gitlab-runner-{{ item.name }}.service"
+        line: "Description=GitLab Runner {{ item.name }} service with docker compose"
+        state: present
+        owner: "root"
+        group: "root"
+        mode: "0770"
+      check_mode: true
+      register: molecule_service
+      failed_when: (molecule_service is changed) or (molecule_service is failed)
+      with_items: "{{ runner_configs }}"

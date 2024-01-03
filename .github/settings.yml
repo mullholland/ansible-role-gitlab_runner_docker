@@ -1,0 +1,8 @@
+---
+#
+# Ansible managed
+#
+repository:
+  description: Install and configures GitLab Runner in a docker container
+  homepage: https://mullholland.net
+  topics: cloud, development, webserver, gitlab, gitlabrunner, ci, cicd, ansible, molecule, tox, playbook

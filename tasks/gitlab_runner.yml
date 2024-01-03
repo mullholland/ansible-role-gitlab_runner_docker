@@ -1,0 +1,53 @@
+---
+- name: gitlab_runner | set application facts
+  ansible.builtin.set_fact:
+    app:
+      name: "{{ item.name }}"
+      image: "{{ item.image }}"
+      base_path: "{{ gitlab_runner_docker_base_path }}/gitlab_runner"
+      server: "{{ item.server }}"
+      token: "{{ item.token }}"
+      env: "{{ item.env | default('') }}"
+      register_env: "{{ item.register_env | default('') }}"
+      register_cmd: "{{ item.register_cmd | default('') }}"
+      volumes: "{{ item.volumes | default('') }}"
+      ports: "{{ item.ports | default('') }}"
+      labels: "{{ item.labels | default('') }}"
+
+- name: "gitlab_runner | Ensure app folders exists"
+  ansible.builtin.file:
+    name: '{{ app.base_path }}/{{ app.name }}/{{ loop_folders }}'
+    owner: "{{ gitlab_runner_docker_user }}"
+    group: "{{ gitlab_runner_docker_group }}"
+    mode: "0770"
+    state: directory
+  loop:
+    - "config"
+  loop_control:
+    loop_var: loop_folders
+
+- name: gitlab_runner | get docker executable path
+  ansible.builtin.command:
+    cmd: "which docker"
+  changed_when: false
+  register: gitlab_runner_docker_executable_path
+
+- name: "gitlab_runner | create docker-compose.yml"
+  ansible.builtin.template:
+    src: "docker-compose.yml.j2"
+    dest: "{{ app.base_path }}/{{ app.name }}/docker-compose.yml"
+    mode: "0640"
+    owner: "{{ gitlab_runner_docker_user }}"
+    group: "{{ gitlab_runner_docker_group }}"
+  notify: gitlab_runner_restart
+
+- name: "gitlab_runner | Create systemd service"
+  ansible.builtin.template:
+    src: "systemd.service.j2"
+    dest: "/etc/systemd/system/gitlab-runner-{{ app.name }}.service"
+    mode: "0770"
+    owner: "root"
+    group: "root"
+  notify:
+    - gitlab_runner_systemd_reload
+    - gitlab_runner_restart

@@ -1,0 +1,44 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+  gather_facts: true
+  vars:
+    gitlab_runner_docker_instances:
+      - name: "group"
+        image: "registry.gitlab.com/gitlab-org/gitlab-runner:alpine"
+        server: "https:/gitlab.example.com"
+        token: "glrt-GnhtWxnfAxn3GnT4ExiK"
+        env:
+          - "KEY1: VALUE1"
+        register_env:
+          - "KEY2: VALUE2"
+        # command: ""
+        volumes:
+          - "/tmp:/tmp"
+        ports:
+          - "8080:8080"
+        labels:
+          - "Label1=Tag1"
+        state: present
+      - name: "group2"
+        image: "registry.gitlab.com/gitlab-org/gitlab-runner:alpine"
+        server: "https:/gitlab.example.com"
+        token: "glrt-GnhtWxnfAxn3GnT4ExiK"
+        env:
+          - "KEY1: VALUE1"
+        register_env:
+          - "KEY2: VALUE2"
+        # command: ""
+        volumes:
+          - "/tmp:/tmp"
+        ports:
+          - "8080:8080"
+        labels:
+          - "Label1=Tag1"
+        state: present
+      - name: "group3"
+        state: absent
+
+  roles:
+    - role: "ansible-role-gitlab_runner_docker"

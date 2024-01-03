@@ -1,0 +1,27 @@
+---
+- name: gitlab_runner_absent | set application facts
+  ansible.builtin.set_fact:
+    app:
+      name: "{{ item.name }}"
+      base_path: "{{ gitlab_runner_docker_base_path }}/gitlab_runner"
+
+- name: gitlab_runner_absent | Check if Service Exists
+  ansible.builtin.stat:
+    path: "gitlab-runner-{{ app.name }}"
+  register: service_status
+
+- name: gitlab_runner_absent | stop runner
+  ansible.builtin.service:
+    name: "gitlab-runner-{{ app.name }}"
+    state: stopped
+  when: service_status.stat.exists
+
+- name: "gitlab_runner_absent | Ensure app folders exists"
+  ansible.builtin.file:
+    name: '{{ app.base_path }}/{{ app.name }}/{{ item }}'
+    state: absent
+
+- name: "gitlab_runner_absent | Create systemd service"
+  ansible.builtin.file:
+    name: "/etc/systemd/system/gitlab-runner-{{ app.name }}.service"
+    state: absent

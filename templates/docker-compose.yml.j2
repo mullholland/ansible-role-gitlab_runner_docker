@@ -1,0 +1,73 @@
+---
+version: "3.3"
+
+networks:
+  {{ gitlab_runner_docker_network_name }}:
+    external: true
+
+services:
+  runner:
+    restart: always
+    image: {{ app.image }}
+    depends_on:
+      - register-runner
+    environment:
+      PUID: {{ gitlab_runner_docker_uid }}
+      PGID: {{ gitlab_runner_docker_group }}
+      TZ: {{ gitlab_runner_docker_timezone }}
+{% for env in app.env %}
+      {{ env }}
+{% endfor %}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - {{ app.base_path }}/{{ app.name }}/config:/etc/gitlab-runner
+{% for volume in app.volumes %}
+      - {{ volume }}
+{% endfor %}
+{% if app.ports and app.ports|length %}
+    ports:
+{% for ports in app.ports %}
+      - {{ ports }}
+{% endfor %}{% endif %}
+{% if app.labels and app.labels|length %}
+    labels:
+{% for labels in app.labels %}
+      - "{{ labels}}"
+{% endfor %}{% endif %}
+
+  register-runner:
+    restart: 'no'
+    image: {{ app.image }}
+    environment:
+      PUID: {{ gitlab_runner_docker_uid }}
+      PGID: {{ gitlab_runner_docker_group }}
+      TZ: {{ gitlab_runner_docker_timezone }}
+      # GitLab Runner.
+      REGISTER_NON_INTERACTIVE: true
+      CI_SERVER_URL: {{ app.server }}
+      REGISTRATION_TOKEN: {{ app.token }}
+      RUNNER_NAME: {{ app.name }}
+      # defaults
+{% for gitlab_runner_docker_registration_env in gitlab_runner_docker_registration_envs %}
+      {{ gitlab_runner_docker_registration_env }}
+{% endfor %}
+      # optional envs
+{% for env in app.env %}
+      {{ env }}
+{% endfor %}
+{% for register_env in app.register_env %}
+      {{ register_env }}
+{% endfor %}
+    command:
+      - register
+{% if app.ports and app.ports|length %}
+    ports:
+{% for ports in app.ports %}
+      - {{ ports }}
+{% endfor %}{% endif %}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - {{ app.base_path }}/{{ app.name }}/config:/etc/gitlab-runner
+{% for volume in app.volumes %}
+      - {{ volume }}
+{% endfor %}

@@ -1,0 +1,20 @@
+---
+- name: create user
+  ansible.builtin.include_tasks:
+    file: user.yml
+
+- name: create docker network
+  ansible.builtin.include_tasks:
+    file: docker.yml
+
+- name: prepare gitlab_runner instance
+  ansible.builtin.include_tasks:
+    file: gitlab_runner.yml
+  loop: "{{ gitlab_runner_docker_instances }}"
+  when: item.state == "present"
+
+- name: remove gitlab_runner instance
+  ansible.builtin.include_tasks:
+    file: gitlab_runner_absent.yml
+  loop: "{{ gitlab_runner_docker_instances }}"
+  when: item.state == "absent"
